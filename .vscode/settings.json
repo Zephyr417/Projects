@@ -1,0 +1,14 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "chat.tools.terminal.autoApprove": {
+        "/^python src/train\\.py --epochs 1 --max-batches 10$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python CNN_XAI/src/train\\.py --epochs 1 --max-batches 10$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
