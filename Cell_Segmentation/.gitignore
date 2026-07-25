@@ -4,3 +4,5 @@
 *.pt
 *.pth
 *.ckpt
+__pycache__/
+*.py[cod]
