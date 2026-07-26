@@ -76,6 +76,7 @@ def uncertainty_metrics(dataloader, model, loss_fn, device):
     all_loss = []
     all_dice = []
     all_entropy = []
+    all_p95_entropy=[]
 
     for images, labels in dataloader:
         images = images.to(device)
@@ -90,10 +91,16 @@ def uncertainty_metrics(dataloader, model, loss_fn, device):
         entropy = predictive_entropy(logits)
         mean_entropy = entropy.mean(dim=(1, 2, 3))
 
+        flattened_entropy = entropy.flatten(start_dim=1)
+
+        p95_entropy = torch.quantile(flattened_entropy, 0.95, dim=1)
+
         all_loss.append(image_bce.cpu())
         all_dice.append(dice.cpu())
         all_entropy.append(mean_entropy.cpu())
+        all_p95_entropy.append(p95_entropy.cpu())
 
     return {"loss": torch.cat(all_loss).numpy(), 
             "dice": torch.cat(all_dice).numpy(), 
-            "mean_entropy": torch.cat(all_entropy).numpy()}
+            "mean_entropy": torch.cat(all_entropy).numpy(),
+            "p95_entropy": torch.cat(all_p95_entropy).numpy()}
