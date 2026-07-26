@@ -59,3 +59,41 @@ def evaluate(dataloader, model, loss_fn, device):
     average_loss = total_loss / total_images
     average_dice = total_dice / total_images
     return average_loss, average_dice
+
+
+def predictive_entropy(logits, eps=1e-6):
+    probabilities = torch.sigmoid(logits)
+
+    entropy = -(probabilities * torch.log(probabilities + eps)
+        + (1 - probabilities) * torch.log(1 - probabilities + eps))
+
+    return entropy
+
+@torch.no_grad()
+def uncertainty_metrics(dataloader, model, loss_fn, device):
+    model.eval()
+
+    all_loss = []
+    all_dice = []
+    all_entropy = []
+
+    for images, labels in dataloader:
+        images = images.to(device)
+        labels = labels.to(device)
+
+        logits = model(images)
+        
+        loss = loss_fn(logits, labels)
+        image_bce = loss.mean(dim=(1, 2, 3))
+
+        dice = dice_score(logits, labels)
+        entropy = predictive_entropy(logits)
+        mean_entropy = entropy.mean(dim=(1, 2, 3))
+
+        all_loss.append(image_bce.cpu())
+        all_dice.append(dice.cpu())
+        all_entropy.append(mean_entropy.cpu())
+
+    return {"loss": torch.cat(all_loss).numpy(), 
+            "dice": torch.cat(all_dice).numpy(), 
+            "mean_entropy": torch.cat(all_entropy).numpy()}
